@@ -8,6 +8,8 @@ Vector integration algorithm for GNU Radio spectrometer
 """
 
 import numpy as np
+import csv
+import time
 from gnuradio import gr
 
 class vec_int(gr.sync_block):
@@ -21,6 +23,8 @@ class vec_int(gr.sync_block):
     
     Note: This is simple on output since it only sends the final avg vector and saves it as
     a file, rather than a continuous spectra GUI update (like a waterfall)
+    
+    Will output a vector and csv file of the integration with metadata when complete.
     """
     
     def __init__(self, vector_size, samp_rate, pfb_size, integration_time_sec):
@@ -41,6 +45,9 @@ class vec_int(gr.sync_block):
     
         self.vec_sum = np.zeros(self.N, np.float64)
         self.vec_count = 0
+        
+        self.outfile = open('h_line_integration_output.csv', 'a', newline = '')
+        self.writer  = csv.writer(self.outfile)
                 
     def work(self, input_items, output_items):
         inp = input_items[0]
@@ -55,6 +62,11 @@ class vec_int(gr.sync_block):
             if self.vec_count >= self.M:
                 out[n_produced] = (self.vec_sum / self.M).astype(np.float32)
                 n_produced += 1
+                
+                timestamp = time.time()
+                # Writes time of integration, number of vectors integrated, and integration time to file
+                self.writer.writerow([timestamp, self.M, self.t] + out[n_produced].tolist())
+                self.outfile.flush()
                 
                 self.vec_count = 0
                 self.vec_sum = np.zeros(self.N, dtype=np.float64)
