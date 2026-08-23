@@ -51,6 +51,8 @@ class timed_vec_int(gr.sync_block):
         self.output_path = output_path
         self.outfile = None
         self.writer  = None
+        if self.write_to_file:
+            self._open_file()
         
         
     def _open_file(self):
@@ -75,6 +77,17 @@ class timed_vec_int(gr.sync_block):
             self._open_file()
         else:
             self._close_file()
+        
+    
+    def set_integration_time_sec(self, integration_time_sec):
+        """
+        Callback for live integration time switching. Recomputes M and 
+        discards any in-progress accumulation.
+        """
+        self.t = int(integration_time_sec)
+        self.M = self.vps * self.t
+        self.vec_count = 0
+        self.vec_sum = np.zeros(self.N, dtype = np.float64)
         
         
     def work(self, input_items, output_items):
