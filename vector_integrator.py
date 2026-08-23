@@ -12,7 +12,7 @@ import csv
 import time
 from gnuradio import gr
 
-class timed_vec_int(gr.sync_block):
+class timed_vec_int(gr.basic_block):
     """
     The input vectors for this integration are after a block of code that converts the 
     fft outputs to real power spectrum (multiplying each output by its conjugate).
@@ -33,7 +33,7 @@ class timed_vec_int(gr.sync_block):
         self.vps assumes a NON-OVERLAPPING PFB: See GNU Radio blocks. If PFB switches to 
         overlapping method, the "pfb_size" factor in self.vps may need to be dropped.
         """
-        gr.sync_block.__init__(
+        gr.basic_block.__init__(
             self,
             name = 'timed_vec_int',
             in_sig = [(np.float32, vector_size)],
@@ -44,11 +44,11 @@ class timed_vec_int(gr.sync_block):
         self.vps = int(round(samp_rate / (self.N*pfb_size)))
         self.M   = self.vps*self.t
     
-        self.vec_sum = np.zeros(self.N, np.float64)
+        self.vec_sum   = np.zeros(self.N, np.float64)
         self.vec_count = 0
         
         self.write_to_file = write_to_file
-        self.output_path = output_path
+        self.output_path   = output_path
         self.outfile = None
         self.writer  = None
         if self.write_to_file:
@@ -77,7 +77,15 @@ class timed_vec_int(gr.sync_block):
             self._open_file()
         else:
             self._close_file()
-        
+    
+    def stop(self):
+        """
+        GNU Radio calls stop as part of normal shutdown sequence. This
+        ensures the CSV file is closed cleanly when the app stops.
+        """
+        self._close_file()
+        return True
+    
     
     def set_integration_time_sec(self, integration_time_sec):
         """
@@ -90,7 +98,7 @@ class timed_vec_int(gr.sync_block):
         self.vec_sum = np.zeros(self.N, dtype = np.float64)
         
         
-    def work(self, input_items, output_items):
+    def general_work(self, input_items, output_items):
         inp = input_items[0]
         out = output_items[0]
         
@@ -101,18 +109,20 @@ class timed_vec_int(gr.sync_block):
             self.vec_count += 1
             
             if self.vec_count >= self.M:
-                out[n_produced] = (self.vec_sum / self.M).astype(np.float32)
-                n_produced += 1
+                avg = (self.vec_sum / self.M).astype(np.float32)
                 
                 if self.write_to_file and self.writer is not None:
                     timestamp = time.time()
                     # Writes time of integration, number of vectors integrated, and integration time to file
-                    self.writer.writerow([timestamp, self.M, self.t] + out[n_produced].tolist())
+                    self.writer.writerow([timestamp, self.M, self.t] + avg.tolist())
                     self.outfile.flush()
                 
+                if n_produced < len(out):
+                    out[n_produced] = avg
+                    n_produced += 1
+                    
                 self.vec_count = 0
                 self.vec_sum = np.zeros(self.N, dtype=np.float64)
             
-        # Can use GNU radio file sink block to save a binary file, then send it to control station
-        # Once control station has the binary file, can read it with code e.g. np.fromfile
+        self.consume(0, len(inp)) # Tells the scheduler that we consumed all input items
         return n_produced
