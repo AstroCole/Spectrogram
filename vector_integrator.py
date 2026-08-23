@@ -91,10 +91,11 @@ class timed_vec_int(gr.sync_block):
                 out[n_produced] = (self.vec_sum / self.M).astype(np.float32)
                 n_produced += 1
                 
-                timestamp = time.time()
-                # Writes time of integration, number of vectors integrated, and integration time to file
-                self.writer.writerow([timestamp, self.M, self.t] + out[n_produced].tolist())
-                self.outfile.flush()
+                if self.write_to_file and self.writer is not None:
+                    timestamp = time.time()
+                    # Writes time of integration, number of vectors integrated, and integration time to file
+                    self.writer.writerow([timestamp, self.M, self.t] + out[n_produced].tolist())
+                    self.outfile.flush()
                 
                 self.vec_count = 0
                 self.vec_sum = np.zeros(self.N, dtype=np.float64)
