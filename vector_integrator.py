@@ -1,18 +1,18 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 14 12:35:27 2026
+#
+# Copyright 2026 dcole.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 
-Vector integration algorithm for GNU Radio spectrometer
-
-@author: Daniel Cole
-"""
 
 import numpy as np
 import csv
 import time
 from gnuradio import gr
 
-class vec_int(gr.sync_block):
+class timed_vec_int(gr.sync_block):
     """
     The input vectors for this integration are after a block of code that converts the 
     fft outputs to real power spectrum (multiplying each output by its conjugate).
@@ -27,14 +27,15 @@ class vec_int(gr.sync_block):
     Will output a vector and csv file of the integration with metadata when complete.
     """
     
-    def __init__(self, vector_size, samp_rate, pfb_size, integration_time_sec):
+    def __init__(self, vector_size, samp_rate, pfb_size, integration_time_sec,
+                 write_to_file = True, output_path = 'h_line_output.csv'):
         """
         self.vps assumes a NON-OVERLAPPING PFB: See GNU Radio blocks. If PFB switches to 
         overlapping method, the "pfb_size" factor in self.vps may need to be dropped.
         """
         gr.sync_block.__init__(
             self,
-            name = 'vec_int',
+            name = 'timed_vec_int',
             in_sig = [(np.float32, vector_size)],
             out_sig = [(np.float32, vector_size)])
         
@@ -46,9 +47,36 @@ class vec_int(gr.sync_block):
         self.vec_sum = np.zeros(self.N, np.float64)
         self.vec_count = 0
         
-        self.outfile = open('h_line_integration_output.csv', 'a', newline = '')
-        self.writer  = csv.writer(self.outfile)
-                
+        self.write_to_file = write_to_file
+        self.output_path = output_path
+        self.outfile = None
+        self.writer  = None
+        
+        
+    def _open_file(self):
+        # Opens (or re-opens) the CSV file for appending
+        if self.outfile is None:
+            self.outfile = open(self.output_path, 'a', newline='')
+            self.writer  = csv.writer(self.outfile)
+    
+    def _close_file(self):
+        if self.outfile is not None:
+            self.outfile.close()
+            self.outfile = None
+            self.writer = None
+            
+    def set_write_to_file(self, write_to_file):
+        """
+        Callback GNU Radio calls when the GUI toggle changes while running.
+        Opens or closes the file handle in step with the toggle GUI.
+        """
+        self.write_to_file = write_to_file
+        if self.write_to_file:
+            self._open_file()
+        else:
+            self._close_file()
+        
+        
     def work(self, input_items, output_items):
         inp = input_items[0]
         out = output_items[0]
@@ -74,5 +102,3 @@ class vec_int(gr.sync_block):
         # Can use GNU radio file sink block to save a binary file, then send it to control station
         # Once control station has the binary file, can read it with code e.g. np.fromfile
         return n_produced
-            
-            
