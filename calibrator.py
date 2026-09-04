@@ -7,20 +7,20 @@ Created on Thu Sep  3 15:19:53 2026
 
 import numpy as np
 import csv
+import os.path
 from gnuradio import gr
 
 class calibrator(gr.basic_block):
     """
     This GNU radio block will calibrate using the position switching
-    method: The user must point to a reference position and toggle this
-    calibration block, then untoggle it to apply its output (file) after
-    integration. 
-    
-    Block expects input from integrator output. See vector_integrator.py. 
+    method: The user must point to a reference position and toggle calibration
+    file generation using a button connected to vector_integrator.py input. Once
+    a calibration file is made (h_line_cal.csv), this code will apply that calibration
+    to the data. If no calibration exists, the code will send a notice and simply pass 
+    the data through.
     """
     
-    def __init__(self, vector_size, apply_cal = False,
-                 write_to_file = True, output_path = 'h_line_cal.csv'):
+    def __init__(self, vector_size, apply_cal = False, cal_path = 'h_line_cal.csv'):
         
         gr.basic_block.__init__(
             self,
@@ -30,47 +30,48 @@ class calibrator(gr.basic_block):
         
         self.N = vector_size
         self.apply_cal = apply_cal
-        self.write_to_file = write_to_file
-        self.cal_spectrum = None
-
-        self.outfile = None
-        self.writer  = None
-        if self.write_to_file:
-            self._open_file()    
-
-
-    def _open_file(self):
-        # Opens (or re-opens) the CSV file for appending
-        if self.outfile is None:
-            self.outfile = open(self.output_path, 'a', newline='')
-            self.writer  = csv.writer(self.outfile)
+        self.cal_path = cal_path
+ 
     
-    def _close_file(self):
-        if self.outfile is not None:
-            self.outfile.close()
-            self.outfile = None
-            self.writer = None
-            
-    def set_write_to_file(self, write_to_file):
+    def read_cal(self):
         """
-        Callback GNU Radio calls when the GUI toggle changes while running.
-        Opens or closes the file handle in step with the toggle GUI.
+        Currently ignores calibration file header. In the future, could add matching
+        of calibration file integration times using header information.
         """
-        self.write_to_file = write_to_file
-        if self.write_to_file:
-            self._open_file()
-        else:
-            self._close_file()
+        with open(self.cal_path, mode = 'r') as file:
+            calreader = csv.reader(file)
+            next(calreader)
+            calstr = next(calreader)
+            cal = np.array(calstr, dtype=float)
+        return cal
     
     
     def general_work(self, input_items, output_items):
         inp = input_items[0]
         out = output_items[0]        
+        n_produced = 0
+
+        if os.path.isfile(self.cal_path):
+            cal = self.read_cal()
+            
+            for i in range(len(inp)):    
+                
+                p_cal = (inp[i] - cal[i]) / cal[i]
+                
+                if n_produced < len(out):
+                    out[n_produced] = p_cal
+                    n_produced += 1
+                    
+        else:
+            # Basically "just passes on the inputs" if no calibration file exists
+            print("Could not calibrate: No calibration file found.")
+            
+            out[:] = inp[:]
+            return len(inp)
         
         
-        
-        
-        
+        self.consume(0, len(inp)) # Tells the scheduler that we consumed all input items
+        return n_produced
         
         
         
