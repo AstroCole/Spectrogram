@@ -29,7 +29,7 @@ class timed_vec_int(gr.basic_block):
     
     def __init__(self, vector_size, samp_rate, pfb_size, integration_time_sec,
                  write_to_file = True, output_path = 'h_line_output.csv',
-                 write_cal = False, cal_path = 'h_line_cal.csv'):
+                 cal_path = 'h_line_cal.csv'):
         """
         self.vps assumes a NON-OVERLAPPING PFB: See GNU Radio blocks. If PFB switches to 
         overlapping method, the "pfb_size" factor in self.vps may need to be dropped.

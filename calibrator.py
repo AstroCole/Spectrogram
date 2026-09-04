@@ -31,37 +31,39 @@ class calibrator(gr.basic_block):
         self.N = vector_size
         self.apply_cal = apply_cal
         self.cal_path = cal_path
- 
-    
-    def read_cal(self):
-        """
-        Currently ignores calibration file header. In the future, could add matching
-        of calibration file integration times using header information.
-        """
-        with open(self.cal_path, mode = 'r') as file:
-            calreader = csv.reader(file)
-            next(calreader)
-            calstr = next(calreader)
-            cal = np.array(calstr, dtype=float)
-        return cal
-    
-    
+        
+        if os.path.isfile(self.cal_path):
+            """
+            Currently ignores calibration file header. In the future, could add matching
+            of calibration file integration times using header information.
+            """
+            with open(self.cal_path, mode = 'r') as file:
+                calreader = csv.reader(file)
+                next(calreader)
+                calstr = next(calreader)
+                self.cal = np.array(calstr, dtype=float)
+            
+
+        
     def general_work(self, input_items, output_items):
         inp = input_items[0]
         out = output_items[0]        
         n_produced = 0
 
-        if os.path.isfile(self.cal_path):
-            cal = self.read_cal()
+        if os.path.isfile(self.cal_path) and self.apply_cal is True:
             
+            cal = self.cal
             for i in range(len(inp)):    
                 
-                p_cal = (inp[i] - cal[i]) / cal[i]
+                p_cal = (inp[i] - cal) / cal
                 
                 if n_produced < len(out):
                     out[n_produced] = p_cal
                     n_produced += 1
                     
+            self.consume(0, len(inp)) # Tells the scheduler that we consumed all input items
+            return n_produced
+        
         else:
             # Basically "just passes on the inputs" if no calibration file exists
             print("Could not calibrate: No calibration file found.")
@@ -69,9 +71,7 @@ class calibrator(gr.basic_block):
             out[:] = inp[:]
             return len(inp)
         
-        
-        self.consume(0, len(inp)) # Tells the scheduler that we consumed all input items
-        return n_produced
+    
         
         
         
