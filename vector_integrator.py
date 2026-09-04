@@ -90,7 +90,7 @@ class timed_vec_int(gr.basic_block):
     def set_integration_time_sec(self, integration_time_sec):
         """
         Callback for live integration time switching. Recomputes M and 
-        discards any in-progress accumulation.
+        discards any work in progress.
         """
         self.t = int(integration_time_sec)
         self.M = self.vps * self.t
