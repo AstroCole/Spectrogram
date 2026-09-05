@@ -31,7 +31,9 @@ class calibrator(gr.basic_block):
         self.N = vector_size
         self.apply_cal = apply_cal
         self.cal_path = cal_path
-        
+    
+    
+    def _load_cal(self):
         if os.path.isfile(self.cal_path):
             """
             Currently ignores calibration file header. In the future, could add matching
@@ -41,23 +43,37 @@ class calibrator(gr.basic_block):
                 calreader = csv.reader(file)
                 next(calreader)
                 calstr = next(calreader)
-                self.cal = np.array(calstr, dtype=float)
-            
-
+                cal = np.array(calstr, dtype=float)       
+            return cal
         
+        else:
+            return None
+          
+        
+    def set_apply_cal(self, apply_cal):
+        self.apply_cal = apply_cal
+        #self.cal = self._load_cal()
+
+
     def general_work(self, input_items, output_items):
         inp = input_items[0]
-        out = output_items[0]        
+        out = output_items[0]   
+        
+        cal = None
+        if self.apply_cal:
+            cal = self._load_cal()
+            
         n_produced = 0
 
-        if os.path.isfile(self.cal_path) and self.apply_cal is True:
-            
-            cal = self.cal
+        if cal is not None:   
+            # In case of zeros to prevent divide by zero
+            snum = 1e-15
+            cal  = np.where(cal == 0.0, snum, cal)
+             
             for i in range(len(inp)):    
-                
-                p_cal = (inp[i] - cal) / cal
-                
+                                
                 if n_produced < len(out):
+                    p_cal = (inp[i] - cal) / cal
                     out[n_produced] = p_cal
                     n_produced += 1
                     
@@ -66,12 +82,14 @@ class calibrator(gr.basic_block):
         
         else:
             # Basically "just passes on the inputs" if no calibration file exists
-            print("Could not calibrate: No calibration file found.")
+            if self.apply_cal:
+                print("Could not calibrate: No calibration file found.")
             
-            out[:] = inp[:]
-            return len(inp)
+            out[:len(inp)] = inp[:]
+            n_produced = len(inp)
         
-    
+        self.consume(0, len(inp)) # Tells the scheduler that we consumed all input items
+        return n_produced
         
         
         
