@@ -99,7 +99,7 @@ class timed_vec_int(gr.basic_block):
     def _open_cal(self):
         # Opens calibration file for calibration if toggled; will overwrite
         if self.calfile is None:
-            self.calfile = open(self.cal_path, 'w')
+            self.calfile = open(self.cal_path, 'w', newline='')
             self.calwriter = csv.writer(self.calfile)
     
     def _close_cal(self):

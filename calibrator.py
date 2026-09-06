@@ -39,10 +39,9 @@ class calibrator(gr.basic_block):
             Currently ignores calibration file header. In the future, could add matching
             of calibration file integration times using header information.
             """
-            with open(self.cal_path, mode = 'r') as file:
+            with open(self.cal_path, mode = 'r', newline='') as file:
                 calreader = csv.reader(file)
-                next(calreader)
-                calstr = next(calreader)
+                calstr = next(calreader)[3:] # Ignoring header info (is same row as data)
                 cal = np.array(calstr, dtype=float)       
             return cal
         
