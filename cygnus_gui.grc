@@ -1,0 +1,350 @@
+options:
+  parameters:
+    author: DCole
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: 'Receiving spectrogram ZMQ PUB block data from cygnus (remote computer) '
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: cygnus_gui
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Cygnus Spectrometer GUI
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: Frequency
+  id: variable
+  parameters:
+    comment: ''
+    value: 1.4204058e9
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 12.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '2048000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: vec_length
+  id: variable
+  parameters:
+    comment: ''
+    value: '4096'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 12.0]
+    rotation: 0
+    state: enabled
+- name: y_max_cal
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    entry_signal: editingFinished
+    gui_hint: (4,0,1,2)
+    label: Y Max (Cal)
+    type: real
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 444.0]
+    rotation: 0
+    state: enabled
+- name: y_max_raw
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    entry_signal: editingFinished
+    gui_hint: (2,0,1,2)
+    label: Y Max (Raw)
+    type: real
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 252.0]
+    rotation: 0
+    state: enabled
+- name: y_min_cal
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    entry_signal: editingFinished
+    gui_hint: (3,0,1,2)
+    label: Y Min (Cal)
+    type: real
+    value: '-0.1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 348.0]
+    rotation: 0
+    state: enabled
+- name: y_min_raw
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    entry_signal: editingFinished
+    gui_hint: (1,0,1,2)
+    label: Y Min (Raw)
+    type: real
+    value: '-0.1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 156.0]
+    rotation: 0
+    state: enabled
+- name: import_1
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import numpy as np
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 88.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_vector_sink_f_0
+  id: qtgui_vector_sink_f
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.05'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    grid: 'False'
+    gui_hint: (5,2,6,9)
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: Post-Integration Spectrum
+    nconnections: '1'
+    ref_level: '0'
+    showports: 'False'
+    update_time: '0.10'
+    vlen: vec_length
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    x_axis_label: '"Frequency (Hz)"'
+    x_start: Frequency - (samp_rate/2)
+    x_step: samp_rate / vec_length
+    x_units: '"Hz"'
+    y_axis_label: '"Signal"'
+    y_units: '""'
+    ymax: y_max_cal
+    ymin: y_min_cal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 152.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_vector_sink_f_0_0
+  id: qtgui_vector_sink_f
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.05'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    grid: 'False'
+    gui_hint: (0,2,3,9)
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Post-FFT Spectrum"'
+    nconnections: '1'
+    ref_level: '0'
+    showports: 'False'
+    update_time: '0.10'
+    vlen: vec_length
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    x_axis_label: '"Frequency (Hz)"'
+    x_start: Frequency - (samp_rate/2)
+    x_step: samp_rate / vec_length
+    x_units: '"Hz"'
+    y_axis_label: '"Signal"'
+    y_units: '""'
+    ymax: y_max_raw
+    ymin: y_min_raw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 320.0]
+    rotation: 0
+    state: enabled
+- name: zeromq_sub_source_0
+  id: zeromq_sub_source
+  parameters:
+    address: tcp://10.0.0.114:5679
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    hwm: '-1'
+    key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '100'
+    type: float
+    vlen: vec_length
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 328.0]
+    rotation: 0
+    state: enabled
+- name: zeromq_sub_source_0_0
+  id: zeromq_sub_source
+  parameters:
+    address: tcp://10.0.0.114:5678
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    hwm: '-1'
+    key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '100'
+    type: float
+    vlen: vec_length
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 160.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [zeromq_sub_source_0, '0', qtgui_vector_sink_f_0_0, '0']
+- [zeromq_sub_source_0_0, '0', qtgui_vector_sink_f_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
