@@ -27,12 +27,11 @@ class timed_vec_int(gr.basic_block):
     Will output a vector and csv file of the integration with metadata when complete.
     """
     
-    def __init__(self, vector_size, samp_rate, pfb_size, integration_time_sec,
+    def __init__(self, vector_size, samp_rate, integration_time_sec,
                  write_to_file = True, output_path = 'h_line_output.csv',
                  cal_path = 'h_line_cal.csv'):
         """
-        self.vps assumes a NON-OVERLAPPING PFB: See GNU Radio blocks. If PFB switches to 
-        overlapping method, the "pfb_size" factor in self.vps may need to be dropped.
+        self.vps assumes an OVERLAPPING PFB: See GNU Radio blocks.
         
         Also, write_cal is designed to trigger using a push button: True when pressed, false 
         on automatic release. The logic in this code therefore actions on "True" but there
@@ -47,7 +46,7 @@ class timed_vec_int(gr.basic_block):
         
         self.N   = vector_size
         self.t   = int(integration_time_sec)
-        self.vps = int(round(samp_rate / (self.N*pfb_size)))
+        self.vps = int(round(samp_rate / (self.N)))
         self.M   = self.vps*self.t
     
         self.vec_sum   = np.zeros(self.N, np.float64)
